@@ -26,10 +26,6 @@ EMBED_DIM = 768
 TITAN_PS_ARG = 1024
 
 
-
-
-
-
 def cosine_lr(optimizer, base_lr, warmup_length, steps):
     warmup_length = max(1, int(warmup_length))
     steps = max(warmup_length + 1, int(steps))
@@ -54,11 +50,7 @@ def make_grad_scaler():
     if torch.cuda.is_available():
         return torch.amp.GradScaler("cuda", enabled=True)
     return torch.amp.GradScaler("cpu", enabled=False)
-
-
-
-
-
+    
 
 def sanitize_features(features: torch.Tensor) -> torch.Tensor:
     return torch.nan_to_num(features.float(), nan=0.0, posinf=0.0, neginf=0.0)

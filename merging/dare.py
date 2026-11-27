@@ -8,8 +8,6 @@ from torch import Tensor
 from merging.common import strip_backbone_only
 
 
-
-
 def dare_mask(
     task_vector: Tensor,
     drop_rate: float,

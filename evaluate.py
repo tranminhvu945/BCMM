@@ -24,13 +24,6 @@ except Exception:
 EMBED_DIM = 768
 TITAN_PS_ARG = 1024
 
-
-
-
-
-
-
-
 def unpack_batch(batch):
     if len(batch) == 6:
         features, coords, time_bin, censorship, survival_time, slide_id = batch

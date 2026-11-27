@@ -14,18 +14,6 @@ def cox_ph_loss(
     events: torch.Tensor,
     eps: float = 1e-7,
 ) -> torch.Tensor:
-    """Negative Cox partial log-likelihood for a mini-batch.
-
-    Args:
-        risk_scores: [B], larger means higher risk / shorter survival.
-        event_times: [B], observed event or censoring time.
-        events: [B], 1 = observed event/death, 0 = censored.
-
-    Notes:
-        Cox loss needs comparable patients in the same mini-batch. The stage-1
-        dataloader therefore returns a list of WSI bags so B can be >1 while
-        each bag is still forwarded separately through TITAN.
-    """
     risk_scores = torch.nan_to_num(risk_scores.float().view(-1), nan=0.0, posinf=20.0, neginf=-20.0)
     risk_scores = risk_scores.clamp(min=-20.0, max=20.0)
     event_times = event_times.float().view(-1)
@@ -64,16 +52,6 @@ def censored_aware_prompt_loss(
     time_bin: torch.Tensor,
     censorship: torch.Tensor,
 ) -> torch.Tensor:
-    """VLSA-style prompt alignment loss with censoring awareness.
-
-    prompt_logits: [B, K] similarity to ordinal prognosis prompts.
-    time_bin: [B], task-specific quantile bin.
-    censorship: [B], 0 = event observed, 1 = censored.
-
-    Event sample: CE against its observed prognosis bin.
-    Censored sample at bin b: -log sum_{k >= b} p(k), because the true event
-    could occur in the censoring bin or any later/better prognosis bin.
-    """
     logits = torch.nan_to_num(prompt_logits.float(), nan=0.0, posinf=20.0, neginf=-20.0)
     logits = logits.clamp(min=-20.0, max=20.0)
     batch_size, num_bins = logits.shape
@@ -110,12 +88,6 @@ def ordinal_prompt_kl_loss(
     censorship: torch.Tensor,
     tau: float = 1.0,
 ) -> torch.Tensor:
-    """Soft ordinal KL loss for ordered prognosis prompts.
-
-    For event samples, the target is a soft distribution centered at the event
-    bin. For censored samples, bins earlier than the censoring bin are masked
-    out, reflecting that the patient survived at least until that bin.
-    """
     logits = torch.nan_to_num(prompt_logits.float(), nan=0.0, posinf=20.0, neginf=-20.0)
     logits = logits.clamp(min=-20.0, max=20.0)
     batch_size, num_bins = logits.shape
@@ -140,11 +112,6 @@ def ordinal_prompt_kl_loss(
 
 
 def concordance_index(event_times, risk_scores, events) -> float:
-    """Harrell C-index where higher risk_score means shorter survival.
-
-    event_times: observed time or censoring time.
-    events: 1 = observed event/death, 0 = censored.
-    """
     times = np.asarray(event_times, dtype=float)
     scores = np.asarray(risk_scores, dtype=float)
     events = np.asarray(events, dtype=int)

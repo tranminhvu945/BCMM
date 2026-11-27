@@ -14,13 +14,7 @@ from utils.config import get_task_order, load_config
 
 
 def collate_MIL_survival(batch):
-    """Collate WSI bags without concatenating different slides.
-
-    Stage-1 uses Cox/DeepSurv scalar risk. Cox loss needs multiple patients in
-    a mini-batch, but each WSI bag must still be forwarded separately through
-    the TITAN slide aggregator. Therefore, this collate function returns lists
-    of feature/coord tensors plus batched labels.
-    """
+nsors plus batched labels.
     features = [item[0] for item in batch]
     coords = [item[1] for item in batch]
     time_bin = torch.LongTensor([item[2] for item in batch])
@@ -31,15 +25,6 @@ def collate_MIL_survival(batch):
 
 
 class Generic_Survival_MIL_Dataset:
-    """MIL survival dataset for pre-extracted WSI features.
-
-    Returned censorship convention follows MambaMIL/CLAM survival code:
-        censorship=0 observed death/event, censorship=1 censored.
-
-    Prompt bins are task-specific quantile bins used only for VLSA-style
-    auxiliary losses. They are NOT the output bins of the main survival head.
-    """
-
     def __init__(self, csv_path, data_dir, time_col, event_col, event_observed_value=1, quantiles=(0.2, 0.4, 0.6, 0.8)):
         self.csv_path = csv_path
         self.data_dir = data_dir

@@ -30,17 +30,6 @@ def seed_torch(device, seed=0):
 def state_dict_sub(
     a: StateDictType, b: StateDictType, strict: bool = True, device=None
 ):
-    """
-    Returns the difference between two state dicts `a-b`.
-
-    Args:
-        a (StateDictType): The first state dict.
-        b (StateDictType): The second state dict.
-        strict (bool): Whether to check if the keys of the two state dicts are the same.
-
-    Returns:
-        StateDictType: The difference between the two state dicts.
-    """
     if strict:
         assert set(a.keys()) == set(b.keys())
 
@@ -56,16 +45,6 @@ def state_dict_to_vector(
     state_dict: StateDictType,
     remove_keys: Optional[List[str]] = None,
 ):
-    """
-    Convert a state dictionary to a vector.
-
-    Args:
-        state_dict (dict): The state dictionary to convert.
-        remove_keys (list, optional): List of keys to remove from the state dictionary. Defaults to [].
-
-    Returns:
-        torch.Tensor: The converted vector.
-    """
     remove_keys = remove_keys if remove_keys is not None else []
     shared_state_dict = copy.deepcopy(state_dict)
     for key in remove_keys:
@@ -77,16 +56,6 @@ def state_dict_to_vector(
     )
 
 def _svd(w: Tensor, full_matrices=True) -> Tuple[Tensor, Tensor, Tensor]:
-    """
-    Perform Singular Value Decomposition (SVD) on a tensor.
-
-    Args:
-        w (Tensor): The input tensor.
-        full_matrices (bool): Whether to compute the full-sized U and V matrices.
-
-    Returns:
-        Tuple[Tensor, Tensor, Tensor]: The U, S, and V matrices from SVD.
-    """
     u, s, vh = torch.linalg.svd(
         w, full_matrices=full_matrices, driver="gesvd" if w.is_cuda else None
     )
@@ -97,17 +66,6 @@ def _svd(w: Tensor, full_matrices=True) -> Tuple[Tensor, Tensor, Tensor]:
 def svd(
     w: Tensor, full_matrices=True, accelerator=None
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """
-    Perform SVD on a tensor, optionally using a specified accelerator.
-
-    Args:
-        w (Tensor): The input tensor.
-        full_matrices (bool): Whether to compute the full-sized U and V matrices.
-        accelerator (str): The device to perform the computation on.
-
-    Returns:
-        Tuple[Tensor, Tensor, Tensor]: The U, S, and V matrices from SVD.
-    """
     if accelerator is None:
         return _svd(w, full_matrices=full_matrices)
     original_device = w.device
@@ -121,16 +79,6 @@ def is_leaf_module(module: nn.Module) -> bool:
 
 
 def get_task_vector_norm(model: nn.Module, pretrained_model: nn.Module) -> Tensor:
-    """
-    Get the vector norm of the task model.
-
-    Args:
-        model (nn.Module): The task model.
-        pretrained_model (nn.Module): The pretrained model.
-
-    Returns:
-        Tensor: The vector norm of the task model.
-    """
     return torch.linalg.norm(
         state_dict_to_vector(
             state_dict_sub(model, pretrained_model)
